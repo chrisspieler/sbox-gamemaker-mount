@@ -1,0 +1,31 @@
+{
+  "Title": "GM Mount Test",
+  "Type": "game",
+  "Org": "ducc",
+  "Ident": "gm_mount_test",
+  "Schema": 1,
+  "IncludeSourceFiles": false,
+  "Resources": null,
+  "PackageReferences": [],
+  "EditorReferences": null,
+  "Mounts": [
+    "deltarune"
+  ],
+  "IsStandaloneOnly": false,
+  "Metadata": {
+    "MaxPlayers": 64,
+    "MinPlayers": 1,
+    "TickRate": 50,
+    "GameNetworkType": "Multiplayer",
+    "MapSelect": "Unrestricted",
+    "MapList": [
+      "facepunch.flatgrass"
+    ],
+    "RankType": "None",
+    "PerMapRanking": false,
+    "LeaderboardType": "None",
+    "CsProjName": "",
+    "StartupScene": "scenes/minimal.scene",
+    "LaunchMode": "Normal"
+  }
+}
