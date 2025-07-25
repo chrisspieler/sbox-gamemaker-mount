@@ -15,6 +15,7 @@ public class DeltaruneMount : GameMakerMount
 	public override string Ident => "deltarune";
 	public override string Title => "DELTARUNE";
 	protected override long AppId => 1671210;
+	protected override bool MultiArchive => false;
 
 	protected override Task Mount( MountContext context )
 	{

@@ -9,6 +9,7 @@
   "PackageReferences": [],
   "EditorReferences": null,
   "Mounts": [
+    "crunky",
     "deltarune"
   ],
   "IsStandaloneOnly": false,

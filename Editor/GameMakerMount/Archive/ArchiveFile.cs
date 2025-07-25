@@ -33,8 +33,9 @@ public class ArchiveFile
 	];
 	public Dictionary<string, ArchiveChunk> Chunks { get; } = [];
 	public List<SpriteRecord> Sprites { get; } = [];
+	public List<TexturePageRecord> TexturePages { get; } = [];
 	public List<TextureRecord> Textures { get; } = [];
-	
+
 	private void LoadIndex( string filePath )
 	{
 		using var fs = File.OpenRead( filePath );
@@ -68,6 +69,10 @@ public class ArchiveFile
 		if ( Chunks.TryGetValue( ChunkMagicTexture, out var textureChunk ) && textureChunk is ArchiveListChunk textureListChunk )
 		{
 			Textures.AddRange( TextureRecord.LoadRecords( textureListChunk, fs, br ) );
+		}
+		if ( Chunks.TryGetValue( ChunkMagicTexturePage, out var texturePageChunk ) && texturePageChunk is ArchiveListChunk texturePageListChunk )
+		{
+			TexturePages.AddRange( TexturePageRecord.LoadRecords( texturePageListChunk, fs, br ) );
 		}
 		return;
 

@@ -11,6 +11,8 @@ public abstract class GameMakerMount : BaseGameMount
 	protected string AppDirectory { get; private set; }
 	protected List<ArchiveFile> Archives { get; set; } = [];
 
+	protected virtual bool MultiArchive => false; 
+
 	protected override void Initialize( InitializeContext context )
 	{
 		if ( !context.IsAppInstalled( AppId ) )
@@ -27,30 +29,45 @@ public abstract class GameMakerMount : BaseGameMount
 
 	protected override Task Mount( MountContext context )
 	{
-		ClearLoadedData();
+		RefreshArchives();
+
+		for ( int i = 0; i < Archives.Count; i++ )
+		{
+			var archive = Archives[i];
+			Log.Info( $"Adding {archive.Textures.Count} TXTR records." );
+			for ( int j = 0; j < archive.Textures.Count; j++ )
+			{
+				var texture = archive.Textures[j];
+				context.Add( ResourceType.Texture, $"{i}/texture/txtr_{j}", new GameMakerTexture( texture ) );
+			}
+		}
 		
+		Log.Info( $"Mounted GameMaker application \"{Title}\" containing {Archives.Count} archive files." );
+		
+		IsMounted = true;
+		return Task.CompletedTask;
+	}
+
+	private void RefreshArchives()
+	{
+		Archives.Clear();
+
 		var options = new EnumerationOptions() { RecurseSubdirectories = true };
-		var archives = System.IO.Directory.EnumerateFiles( 
-				path: AppDirectory, 
-				searchPattern: "*.win", 
-				options 
+		var archives = System.IO.Directory.EnumerateFiles(
+				path: AppDirectory,
+				searchPattern: "*.win",
+				options
 			)
-			.Skip( 1 )
-			.Take( 1 )
 			.Select( filePath => new ArchiveFile( filePath ) )
 			.ToArray();
-		
-		Archives.AddRange( archives );
 
-		var textures = archives.First().Textures;
-		Log.Info( $"Adding {textures.Count} TXTR records." );
-		for ( int i = 0; i < textures.Count; i++ )
+		if ( MultiArchive )
 		{
-			var texture = textures[i];
-			context.Add( ResourceType.Texture, $"texture/txtr_{i}", new GameMakerTexture( texture ) );
+			Archives.AddRange( archives );
 		}
-		IsMounted = true;
-		Log.Info( $"Mounted GameMaker application \"{Title}\" containing {Archives.Count} archive files." );
-		return Task.CompletedTask;
+		else if ( archives.Length > 0  )
+		{
+			Archives.Add( archives[0] );
+		}
 	}
 }

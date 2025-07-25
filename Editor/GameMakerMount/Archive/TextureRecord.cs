@@ -23,7 +23,7 @@ public record TextureRecord( ArchiveFile File, int Offset, int DataLength, int S
 		int sizeY = br.ReadInt32();
 		int unk1 = br.ReadInt32();
 		int addr = br.ReadInt32();
-		Log.Info( $"{fs.Position:X8} Add texture at {addr:X8} width: {sizeX}, height: {sizeY}, dataSize: {dataSize}" );
+		// Log.Info( $"{fs.Position:X8} Add texture at {addr:X8} width: {sizeX}, height: {sizeY}, dataSize: {dataSize}" );
 		return new TextureRecord( file, addr, dataSize, sizeX, sizeY );
 	}
 }

@@ -15,7 +15,7 @@ public class GameMakerSprite : GameMakerArchiveResource
 		using var ms = new MemoryStream( (byte[])base.Load() );
 		using var br = new BinaryReader( ms );
 
-
+		
 		return null;
 	}
 }
