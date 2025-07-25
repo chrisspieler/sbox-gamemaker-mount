@@ -34,7 +34,7 @@ public class ArchiveFile
 	public Dictionary<string, ArchiveChunk> Chunks { get; } = [];
 	public List<SpriteRecord> Sprites { get; } = [];
 	public List<TexturePageRecord> TexturePages { get; } = [];
-	public List<TextureRecord> Textures { get; } = [];
+	public List<TextureChunk.Record> Textures { get; } = [];
 
 	private void LoadIndex( string filePath )
 	{
@@ -44,8 +44,8 @@ public class ArchiveFile
 		fs.Seek( 0, SeekOrigin.Begin );
 
 		var formChunk = ReadChunk();
-		DataLength = formChunk.DataLength;
-		Log.Info( $"Loading {formChunk.DataLength.FormatBytes()} ({formChunk.DataLength} bytes) GameMaker archive: {FilePath}" );
+		DataLength = formChunk.Data.DataLength;
+		Log.Info( $"Loading {DataLength.FormatBytes()} ({DataLength} bytes) GameMaker archive: {FilePath}" );
 		
 		while ( fs.Position < fs.Length )
 		{
@@ -53,22 +53,23 @@ public class ArchiveFile
 			Chunks.Add( chunk.Magic, chunk );
 			if ( chunk is ArchiveListChunk listChunk )
 			{
-				Log.Info( $"{chunk.Offset:X8} ListChunk \"{chunk.Magic}\" data length: {chunk.DataLength}, element count: {listChunk.ElementCount}" );
+				Log.Info( $"{chunk.Data.Offset:X8} ListChunk \"{chunk.Magic}\" data length: {chunk.Data.DataLength}, element count: {listChunk.ElementCount}" );
 			}
 			else
 			{
-				Log.Info( $"{chunk.Offset:X8} Chunk \"{chunk.Magic}\" data length: {chunk.DataLength}" );
+				Log.Info( $"{chunk.Data.Offset:X8} Chunk \"{chunk.Magic}\" data length: {chunk.Data.DataLength}" );
 			}
-			fs.Seek( chunk.Offset + chunk.DataLength + 8, SeekOrigin.Begin );
+			fs.Seek( chunk.Data.Offset + chunk.Data.DataLength + 8, SeekOrigin.Begin );
 		}
 
 		if ( Chunks.TryGetValue( ChunkMagicSprite, out var spriteChunk ) && spriteChunk is ArchiveListChunk spriteListChunk )
 		{
 			Sprites.AddRange( SpriteRecord.LoadRecords( spriteListChunk, fs, br ) );
 		}
-		if ( Chunks.TryGetValue( ChunkMagicTexture, out var textureChunk ) && textureChunk is ArchiveListChunk textureListChunk )
+		if ( Chunks.TryGetValue( ChunkMagicTexture, out var textureChunk ) && textureChunk is TextureChunk textureListChunk )
 		{
-			Textures.AddRange( TextureRecord.LoadRecords( textureListChunk, fs, br ) );
+			textureListChunk.ReadAllRecordsFromDisk();
+			Textures.AddRange( textureListChunk.Records );
 		}
 		if ( Chunks.TryGetValue( ChunkMagicTexturePage, out var texturePageChunk ) && texturePageChunk is ArchiveListChunk texturePageListChunk )
 		{
@@ -81,14 +82,15 @@ public class ArchiveFile
 			var offset = (int)fs.Position;
 			var magic = new string( br.ReadChars( 4 ) );
 			var dataLength = br.ReadInt32();
+			var archiveData = new ArchiveData( this, offset, dataLength );
 			if ( !_listChunkMagic.Contains( magic ) )
 			{
-				return new ArchiveChunk( this, offset, dataLength, magic );
+				return new ArchiveChunk( archiveData, magic );
 			}
 
 			var elementCount = br.ReadInt32();
 			var elementOffsets = br.ReadInt32Array( elementCount );
-			return new ArchiveListChunk( this, offset, dataLength, magic, elementCount, elementOffsets );
+			return new ArchiveListChunk( archiveData, magic, elementCount, elementOffsets );
 		}
 	}
 }

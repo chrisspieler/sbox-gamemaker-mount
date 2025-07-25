@@ -579,8 +579,8 @@
       "__version": 1,
       "Flags": 0,
       "Name": "Plane",
-      "Position": "205.6373,134.6899,11.41434",
-      "Rotation": "-0.3573591,-0.605709,0.3497062,-0.6189641",
+      "Position": "133.9336,93.93369,62.00809",
+      "Rotation": "-0.462485,0.544575,0.4499185,0.535835",
       "Scale": "1,1,1",
       "Tags": "",
       "Enabled": true,
@@ -618,15 +618,15 @@
           "__type": "SpriteTextureTester",
           "__guid": "4b8c035e-6b60-472a-9f52-c7a50b47c6da",
           "__enabled": true,
-          "Height": 23,
+          "Height": 156,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "PositionX": 1968,
-          "PositionY": 1030,
+          "PositionX": 1775,
+          "PositionY": 782,
           "Renderer": {
             "_type": "component",
             "component_id": "c557d6b2-67bc-4a9f-b146-6b9457454062",
@@ -634,7 +634,72 @@
             "component_type": "ModelRenderer"
           },
           "Texture": null,
-          "Width": 26
+          "Width": 136
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "7646ac6d-6a50-4dff-9bc9-724b1b03840e",
+      "__version": 1,
+      "Flags": 0,
+      "Name": "Plane (1)",
+      "Position": "118.2671,66.12581,43.87736",
+      "Rotation": "0.308042,-0.6424665,-0.2936415,-0.6372768",
+      "Scale": "0.2,0.2,0.2",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkInterpolation": true,
+      "NetworkOrphaned": 0,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.ModelRenderer",
+          "__guid": "9f6ddae7-636b-4ff9-b442-157582b0a64d",
+          "__enabled": true,
+          "BodyGroups": 18446744073709551615,
+          "CreateAttachments": false,
+          "MaterialGroup": null,
+          "MaterialOverride": "__shader_shaders_gamemaker_sprite.vmat",
+          "Materials": null,
+          "Model": "models/dev/plane.vmdl",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "RenderOptions": {
+            "GameLayer": true,
+            "OverlayLayer": false,
+            "BloomLayer": false,
+            "AfterUILayer": false
+          },
+          "RenderType": "Off",
+          "Tint": "1,1,1,1"
+        },
+        {
+          "__type": "SpriteTextureTester",
+          "__guid": "0dddb972-0c9b-48b3-8617-8229ebc1749b",
+          "__enabled": true,
+          "Height": 29,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "PositionX": 72,
+          "PositionY": 2011,
+          "Renderer": {
+            "_type": "component",
+            "component_id": "9f6ddae7-636b-4ff9-b442-157582b0a64d",
+            "go": "7646ac6d-6a50-4dff-9bc9-724b1b03840e",
+            "component_type": "ModelRenderer"
+          },
+          "Texture": null,
+          "Width": 28
         }
       ],
       "Children": []

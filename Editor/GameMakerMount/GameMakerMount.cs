@@ -30,7 +30,6 @@ public abstract class GameMakerMount : BaseGameMount
 	protected override Task Mount( MountContext context )
 	{
 		RefreshArchives();
-
 		for ( int i = 0; i < Archives.Count; i++ )
 		{
 			var archive = Archives[i];
@@ -38,7 +37,13 @@ public abstract class GameMakerMount : BaseGameMount
 			for ( int j = 0; j < archive.Textures.Count; j++ )
 			{
 				var texture = archive.Textures[j];
-				context.Add( ResourceType.Texture, $"{i}/texture/txtr_{j}", new GameMakerTexture( texture ) );
+				context.Add( ResourceType.Texture, $"{i}/texture/txtr_{j}", new GameMakerTexture( texture.TextureData ) );
+			}
+
+			for ( int j = 0; j < archive.Sprites.Count; j++ )
+			{
+				var sprite = archive.Sprites[j];
+				context.Add( ResourceType.Material, $"{i}/sprite/{sprite.Name}", new GameMakerSprite( sprite ) );
 			}
 		}
 		

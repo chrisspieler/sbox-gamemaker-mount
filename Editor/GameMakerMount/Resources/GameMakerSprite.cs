@@ -1,21 +1,13 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using Sandbox.Mounting;
 
 namespace GameMakerMount;
 
-public class GameMakerSprite : GameMakerArchiveResource
+public class GameMakerSprite( SpriteRecord Sprite ) : ResourceLoader<GameMakerMount>
 {
-	public GameMakerSprite(ArchiveFile archive, int offset, int dataLength) : base(archive, offset, dataLength)
-	{
-		
-	}
-
 	protected override object Load()
 	{
-		using var ms = new MemoryStream( (byte[])base.Load() );
-		using var br = new BinaryReader( ms );
-
-		
-		return null;
+		var material = Material.Create( Sprite.Name, "shaders/gamemaker_sprite.shader" );
+		// material.Attributes.Set( "AtlasTexture", );
+		return material;
 	}
 }
