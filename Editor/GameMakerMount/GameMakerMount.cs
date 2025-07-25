@@ -11,7 +11,7 @@ public abstract class GameMakerMount : BaseGameMount
 	protected string AppDirectory { get; private set; }
 	protected List<ArchiveFile> Archives { get; set; } = [];
 
-	protected virtual bool MultiArchive => false; 
+	protected virtual bool MultiArchive => false;
 
 	protected override void Initialize( InitializeContext context )
 	{
