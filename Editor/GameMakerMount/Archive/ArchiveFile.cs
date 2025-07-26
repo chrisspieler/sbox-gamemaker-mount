@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Reflection;
 using Editor.ShaderGraph.Nodes;
 using Sandbox.Diagnostics;
 using Sandbox.Extensions;
@@ -18,19 +19,18 @@ public class ArchiveFile
 		FilePath = filePath;
 		
 		LoadIndex( filePath );
+		
 	}
 
 	public string FilePath { get; }
 	public int DataLength { get; private set; }
 
-	// TODO: Make this static once I know all of the chunks that can be ListChunk.
-	private readonly HashSet<string> _listChunkMagic = 
-	[ 
-		ChunkMagicSprite,
-		ChunkMagicTexturePage,
-		ChunkMagicString,
-		ChunkMagicTexture
-	];
+	// TODO: Make this static once every chunk is implemented.
+	private readonly Dictionary<string, Type> _listChunkTypes = new()
+	{
+		{ ChunkMagicTexture, typeof(TextureChunk) }
+	};
+	
 	public Dictionary<string, ArchiveChunk> Chunks { get; } = [];
 	public List<SpriteRecord> Sprites { get; } = [];
 	public List<TexturePageRecord> TexturePages { get; } = [];
@@ -83,13 +83,18 @@ public class ArchiveFile
 			var magic = new string( br.ReadChars( 4 ) );
 			var dataLength = br.ReadInt32();
 			var archiveData = new ArchiveData( this, offset, dataLength );
-			if ( !_listChunkMagic.Contains( magic ) )
+			if ( !_listChunkTypes.ContainsKey( magic ) )
 			{
 				return new ArchiveChunk( archiveData, magic );
 			}
 
 			var elementCount = br.ReadInt32();
 			var elementOffsets = br.ReadInt32Array( elementCount );
+			if ( _listChunkTypes.TryGetValue( magic, out var chunkType ) )
+			{
+				return Activator.CreateInstance( chunkType, [archiveData, magic, elementCount, elementOffsets] ) 
+					as ArchiveListChunk;
+			}
 			return new ArchiveListChunk( archiveData, magic, elementCount, elementOffsets );
 		}
 	}

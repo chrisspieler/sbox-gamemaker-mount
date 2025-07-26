@@ -55,7 +55,6 @@ PS
 		// Calculate the offset plus size in UV coordinates.
 		float2 uv = offset + size;
 		float4 col = g_AtlasTexture.Sample( g_sPointClamp, uv.xy );
-		// WHY IS THIS BACKWARDS???
-		return col.bgra * i.vVertexColor;
+		return col * i.vVertexColor;
 	}
 }

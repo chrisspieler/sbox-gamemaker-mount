@@ -14,6 +14,8 @@ public record TextureChunk( ArchiveData Data, string Magic, int ElementCount, in
 	{
 	}
 
+	public override string ChunkMagic => "TXTR";
+
 	protected override Record ReadRecord( int recordOffset, FileStream fs, BinaryReader br )
 	{
 		int scaled = br.ReadInt32();
@@ -27,7 +29,7 @@ public record TextureChunk( ArchiveData Data, string Magic, int ElementCount, in
 		var recordData = new ArchiveData( 
 				archive: Data.Archive, 
 				offset: addr, 
-				dataLength: recordOffset - recordOffset 
+				dataLength: dataSize 
 			);
 		
 		return new Record(

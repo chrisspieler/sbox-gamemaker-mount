@@ -7,29 +7,6 @@ namespace GameMakerMount;
 public class GameMakerTexture( ArchiveData data )
 	: GameMakerArchiveResource( data )
 {
-	protected override object Load()
-	{
-		var bytes = (byte[])base.Load();
-		var ms = new MemoryStream( bytes );
-		var br = new BinaryReader( ms );
-		var magic = new string( br.ReadChars( 4 ) );
-		var unkFlags = br.ReadInt32();
-		var uncompressedSize = br.ReadInt32();
-		
-		Log.Info( "Uncompressed size: " + uncompressedSize );
-		var buffer = new byte[uncompressedSize];
-		var unzipStream = new BZip2InputStream( ms );
-		var bytesRead = unzipStream.Read( buffer );
-		Log.Info( $"Read {bytesRead} bytes from BZ2 stream" );
-		
-		var decompressedStream = new MemoryStream( buffer );
-		var imageData = QoiConverter.GetImageFromStream( decompressedStream, out int width, out int height );
-		Log.Info( $"Creating {width}x{height} texture" );
-		return Texture.Create( width, height, ImageFormat.RGBA8888 )
-			.WithData( imageData )
-			.Finish();
-	}
-
 	protected override object LoadFromData( MemoryStream ms, BinaryReader br )
 	{
 		// TODO: Validate this magic to determine if BZ2, QOI, PNG, or whatever.
@@ -45,9 +22,8 @@ public class GameMakerTexture( ArchiveData data )
 		
 		Log.Info( $"Creating {width}x{height} texture" );
 		
-		// Create a texture using that raw data.
-		// TODO: Should this be ABGR instead?
-		return Texture.Create( width, height, ImageFormat.RGBA8888 )
+		// Create a texture using that raw data. Apparently it's BGRA.
+		return Texture.Create( width, height, ImageFormat.BGRA8888 )
 			.WithData( imageData )
 			.Finish();
 
