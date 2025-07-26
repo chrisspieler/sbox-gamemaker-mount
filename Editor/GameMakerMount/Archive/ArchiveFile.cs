@@ -1,8 +1,4 @@
 ﻿using System.IO;
-using System.Reflection;
-using Editor.ShaderGraph.Nodes;
-using Sandbox.Diagnostics;
-using Sandbox.Extensions;
 
 namespace GameMakerMount;
 
@@ -18,8 +14,8 @@ public class ArchiveFile
 	{
 		FilePath = filePath;
 		
-		LoadIndex( filePath );
-		
+		LoadAllChunkHeaders();
+		LoadAllChunkRecords();
 	}
 
 	public string FilePath { get; }
@@ -28,74 +24,79 @@ public class ArchiveFile
 	// TODO: Make this static once every chunk is implemented.
 	private readonly Dictionary<string, Type> _listChunkTypes = new()
 	{
+		{ ChunkMagicSprite, typeof( SpriteChunk ) },
+		{ ChunkMagicTexturePage, typeof(TexturePageChunk) },
 		{ ChunkMagicTexture, typeof(TextureChunk) }
 	};
 	
 	public Dictionary<string, ArchiveChunk> Chunks { get; } = [];
-	public List<SpriteRecord> Sprites { get; } = [];
-	public List<TexturePageRecord> TexturePages { get; } = [];
-	public List<TextureChunk.Record> Textures { get; } = [];
+	public Dictionary<int, SpriteChunk.Record> Sprites { get; private set; } = [];
+	public Dictionary<int, TexturePageChunk.Record> TexturePages { get; private set; } = [];
+	public Dictionary<int, TextureChunk.Record> Textures { get; private set; } = [];
 
-	private void LoadIndex( string filePath )
+	private void LoadAllChunkHeaders()
 	{
-		using var fs = File.OpenRead( filePath );
+		using var fs = File.OpenRead( FilePath );
 		using var br = new BinaryReader( fs );
 		
 		fs.Seek( 0, SeekOrigin.Begin );
 
-		var formChunk = ReadChunk();
-		DataLength = formChunk.Data.DataLength;
+		var formChunk = ReadChunk( fs, br );
+		DataLength = formChunk.ChunkData.DataLength;
 		Log.Info( $"Loading {DataLength.FormatBytes()} ({DataLength} bytes) GameMaker archive: {FilePath}" );
 		
 		while ( fs.Position < fs.Length )
 		{
-			var chunk = ReadChunk();
+			var chunk = ReadChunk( fs, br );
 			Chunks.Add( chunk.Magic, chunk );
 			if ( chunk is ArchiveListChunk listChunk )
 			{
-				Log.Info( $"{chunk.Data.Offset:X8} ListChunk \"{chunk.Magic}\" data length: {chunk.Data.DataLength}, element count: {listChunk.ElementCount}" );
+				Log.Info( $"{chunk.ChunkData.Offset:X8} ListChunk \"{chunk.Magic}\" data length: {chunk.ChunkData.DataLength}, element count: {listChunk.ElementCount}" );
 			}
 			else
 			{
-				Log.Info( $"{chunk.Data.Offset:X8} Chunk \"{chunk.Magic}\" data length: {chunk.Data.DataLength}" );
+				Log.Info( $"{chunk.ChunkData.Offset:X8} Chunk \"{chunk.Magic}\" data length: {chunk.ChunkData.DataLength}" );
 			}
-			fs.Seek( chunk.Data.Offset + chunk.Data.DataLength + 8, SeekOrigin.Begin );
+			fs.Seek( chunk.ChunkData.Offset + chunk.ChunkData.DataLength + 8, SeekOrigin.Begin );
+		}
+	}
+
+	private ArchiveChunk ReadChunk( FileStream stream, BinaryReader reader )
+	{
+		var offset = (int)stream.Position;
+		var magic = new string( reader.ReadChars( 4 ) );
+		var dataLength = reader.ReadInt32();
+		var archiveData = new ArchiveData( this, offset, dataLength );
+		if ( !_listChunkTypes.ContainsKey( magic ) )
+		{
+			return new ArchiveChunk( archiveData, magic );
 		}
 
-		if ( Chunks.TryGetValue( ChunkMagicSprite, out var spriteChunk ) && spriteChunk is ArchiveListChunk spriteListChunk )
+		var elementCount = reader.ReadInt32();
+		var elementOffsets = reader.ReadInt32Array( elementCount );
+		if ( _listChunkTypes.TryGetValue( magic, out var chunkType ) )
 		{
-			Sprites.AddRange( SpriteRecord.LoadRecords( spriteListChunk, fs, br ) );
+			return Activator.CreateInstance( chunkType, [archiveData, magic, elementCount, elementOffsets] ) 
+				as ArchiveListChunk;
 		}
-		if ( Chunks.TryGetValue( ChunkMagicTexture, out var textureChunk ) && textureChunk is TextureChunk textureListChunk )
-		{
-			textureListChunk.ReadAllRecordsFromDisk();
-			Textures.AddRange( textureListChunk.Records );
-		}
-		if ( Chunks.TryGetValue( ChunkMagicTexturePage, out var texturePageChunk ) && texturePageChunk is ArchiveListChunk texturePageListChunk )
-		{
-			TexturePages.AddRange( TexturePageRecord.LoadRecords( texturePageListChunk, fs, br ) );
-		}
+		return new ArchiveListChunk( archiveData, magic, elementCount, elementOffsets );
+	}
+
+	private void LoadAllChunkRecords()
+	{
+		Textures = LoadRecordSet<TextureChunk, TextureChunk.Record>( ChunkMagicTexture );
+		TexturePages = LoadRecordSet<TexturePageChunk, TexturePageChunk.Record>( ChunkMagicTexturePage );
+		Sprites = LoadRecordSet<SpriteChunk, SpriteChunk.Record>( ChunkMagicSprite );
 		return;
 
-		ArchiveChunk ReadChunk()
+		Dictionary<int, TRecord> LoadRecordSet<TChunk, TRecord>( string magic ) 
+			where TChunk : ArchiveListChunk<TRecord>
+			where TRecord : ChunkRecord
 		{
-			var offset = (int)fs.Position;
-			var magic = new string( br.ReadChars( 4 ) );
-			var dataLength = br.ReadInt32();
-			var archiveData = new ArchiveData( this, offset, dataLength );
-			if ( !_listChunkTypes.ContainsKey( magic ) )
-			{
-				return new ArchiveChunk( archiveData, magic );
-			}
-
-			var elementCount = br.ReadInt32();
-			var elementOffsets = br.ReadInt32Array( elementCount );
-			if ( _listChunkTypes.TryGetValue( magic, out var chunkType ) )
-			{
-				return Activator.CreateInstance( chunkType, [archiveData, magic, elementCount, elementOffsets] ) 
-					as ArchiveListChunk;
-			}
-			return new ArchiveListChunk( archiveData, magic, elementCount, elementOffsets );
+			if ( !Chunks.TryGetValue( magic, out var chunk ) || chunk is not TChunk listChunk )
+				return [];
+			
+			return listChunk.Records.ToDictionary( r => r.RecordData.Offset );
 		}
 	}
 }

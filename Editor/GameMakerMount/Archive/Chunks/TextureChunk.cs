@@ -2,19 +2,18 @@
 
 namespace GameMakerMount;
 
-public record TextureChunk( ArchiveData Data, string Magic, int ElementCount, int[] ElementOffsets ) 
-	: ArchiveListChunk<TextureChunk.Record>( Data, Magic, ElementCount, ElementOffsets )
+public record TextureChunk( ArchiveData ChunkData, string Magic, int ElementCount, int[] ElementOffsets ) 
+	: ArchiveListChunk<TextureChunk.Record>( ChunkData, Magic, ElementCount, ElementOffsets )
 {
-	public record Record( 
-			int Scaled,
-			int GeneratedMips,
-			Vector2Int Size,
-			ArchiveData TextureData
-		)
-	{
-	}
-
-	public override string ChunkMagic => "TXTR";
+	public record Record(
+		ArchiveData RecordData,
+		int Scaled,
+		int GeneratedMips,
+		Vector2Int Size,
+		ArchiveData TextureData
+	) : ChunkRecord( RecordData );
+	
+	public override string ChunkMagic => ArchiveFile.ChunkMagicTexture;
 
 	protected override Record ReadRecord( int recordOffset, FileStream fs, BinaryReader br )
 	{
@@ -26,17 +25,18 @@ public record TextureChunk( ArchiveData Data, string Magic, int ElementCount, in
 		int unk1 = br.ReadInt32();
 		int addr = br.ReadInt32();
 		
-		var recordData = new ArchiveData( 
-				archive: Data.Archive, 
+		var textureData = new ArchiveData( 
+				archive: ChunkData.Archive, 
 				offset: addr, 
 				dataLength: dataSize 
 			);
-		
+
 		return new Record(
-				scaled,
-				generatedMips,
-				new Vector2Int( sizeX, sizeY ),
-				recordData 
+				RecordData: new ArchiveData( ChunkData.Archive, recordOffset, (int)fs.Position - recordOffset ),
+				Scaled: scaled,
+				GeneratedMips: generatedMips,
+				Size: new Vector2Int( sizeX, sizeY ),
+				TextureData: textureData 
 			);
 	}
 }

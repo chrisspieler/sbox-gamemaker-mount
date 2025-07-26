@@ -1,5 +1,5 @@
 ﻿namespace GameMakerMount;
 
-public record ArchiveChunk( ArchiveData Data, string Magic  ) 
+public record ArchiveChunk( ArchiveData ChunkData, string Magic  ) 
 {
 }

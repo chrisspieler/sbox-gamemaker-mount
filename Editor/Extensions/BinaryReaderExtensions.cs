@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Sandbox.Extensions;
+namespace GameMakerMount;
 
 public static class BinaryReaderExtensions
 {

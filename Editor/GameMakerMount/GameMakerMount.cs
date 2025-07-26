@@ -7,6 +7,8 @@ namespace GameMakerMount;
 
 public abstract class GameMakerMount : BaseGameMount
 {
+	private record MountContextAddCommand( ResourceType Type, string Path, ResourceLoader Loader );
+	
 	protected abstract long AppId { get; }
 	protected string AppDirectory { get; private set; }
 	protected List<ArchiveFile> Archives { get; set; } = [];
@@ -30,21 +32,10 @@ public abstract class GameMakerMount : BaseGameMount
 	protected override Task Mount( MountContext context )
 	{
 		RefreshArchives();
-		for ( int i = 0; i < Archives.Count; i++ )
-		{
-			var archive = Archives[i];
-			Log.Info( $"Adding {archive.Textures.Count} TXTR records." );
-			for ( int j = 0; j < archive.Textures.Count; j++ )
-			{
-				var texture = archive.Textures[j];
-				context.Add( ResourceType.Texture, $"{i}/texture/txtr_{j}", new GameMakerTexture( texture.TextureData ) );
-			}
 
-			for ( int j = 0; j < archive.Sprites.Count; j++ )
-			{
-				var sprite = archive.Sprites[j];
-				context.Add( ResourceType.Material, $"{i}/sprite/{sprite.Name}", new GameMakerSprite( sprite ) );
-			}
+		foreach ( var resource in GetAllResources() )
+		{
+			context.Add( resource.Type, resource.Path, resource.Loader );
 		}
 		
 		Log.Info( $"Mounted GameMaker application \"{Title}\" containing {Archives.Count} archive files." );
@@ -52,6 +43,37 @@ public abstract class GameMakerMount : BaseGameMount
 		IsMounted = true;
 		return Task.CompletedTask;
 	}
+
+	private IEnumerable<MountContextAddCommand> GetAllResources()
+	{
+		for ( int i = 0; i < Archives.Count; i++ )
+		{
+			var archive = Archives[i];
+			
+			// Load all textures
+			Log.Info( $"Creating resources for {archive.Textures.Count} {ArchiveFile.ChunkMagicTexture} records." );
+			foreach ( var (offset, texture) in archive.Textures )
+			{
+				yield return new MountContextAddCommand( 
+						Type: ResourceType.Texture,
+						Path: $"{i}/texture/txtr_{offset}",
+						Loader: new GameMakerTexture( texture.TextureData ) 
+					);
+			}
+			
+			// Load all sprites
+			Log.Info( $"Creating resources for {archive.Sprites.Count} {ArchiveFile.ChunkMagicSprite} records." );
+			foreach ( var (_, sprite) in archive.Sprites )
+			{
+				yield return new MountContextAddCommand(
+						Type: ResourceType.Material,
+						Path: $"{i}/sprite/{sprite.Name}",
+						Loader: new GameMakerSprite( sprite )
+					);
+			}
+		}
+	}
+	
 
 	private void RefreshArchives()
 	{
