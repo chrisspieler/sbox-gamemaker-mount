@@ -127,14 +127,22 @@ public abstract class GameMakerMount : BaseGameMount
 	
 	public string GetRelativeFilePathForRecord( ChunkRecord record )
 	{
-		var archiveIndex = _archives.IndexOf( record.RecordData.Archive );
-		return record switch
+		var archiveDir = Path.GetDirectoryName( record.RecordData.Archive.FilePath );
+		var relativeDir = Path.GetRelativePath( AppDirectory, archiveDir! );
+		
+		// If the data.win is in the app directory, put the data folder in the root instead of making a "." folder.
+		relativeDir = relativeDir == "."
+			? "data"
+			: Path.Combine( relativeDir, "data" );
+		
+		var relativePath = record switch
 		{
-			 TextureChunk.Record => $"{archiveIndex}/texture/TXTR_{record.Index}.vtex",
-			 SpriteChunk.Record spriteRecord => $"{archiveIndex}/sprite/{spriteRecord.Name}.json",
-			 SoundChunk.Record soundRecord => $"{archiveIndex}/sound/{soundRecord.Name}.vsnd",
-			 _ => $"{archiveIndex}/unknown/{record.Index}"
+			 TextureChunk.Record => $"texture/TXTR_{record.Index}.vtex",
+			 SpriteChunk.Record spriteRecord => $"sprite/{spriteRecord.Name}.json",
+			 SoundChunk.Record soundRecord => $"sound/{soundRecord.Name}.vsnd",
+			 _ => $"unknown/{record.Index}"
 		};
+		return Path.Combine( relativeDir, relativePath );
 	}
 
 	private void RefreshArchives()
