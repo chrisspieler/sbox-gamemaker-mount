@@ -204,7 +204,7 @@
       "Flags": 0,
       "Name": "Camera",
       "Position": "-200,0,100",
-      "Rotation": "0.00000003751492,0,0,1",
+      "Rotation": "0,0,0,1",
       "Scale": "1,1,1",
       "Tags": "",
       "Enabled": true,

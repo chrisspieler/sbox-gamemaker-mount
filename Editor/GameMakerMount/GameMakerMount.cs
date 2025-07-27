@@ -11,6 +11,7 @@ public abstract class GameMakerMount : BaseGameMount
 	
 	protected abstract long AppId { get; }
 	protected string AppDirectory { get; private set; }
+	protected virtual string MusicDirectory => string.Empty;
 
 	public IReadOnlyList<ArchiveFile> Archives
 	{
@@ -75,6 +76,21 @@ public abstract class GameMakerMount : BaseGameMount
 				);
 			}
 		}
+
+		var musicDir = Path.Combine( AppDirectory, MusicDirectory );
+		foreach ( var oggFilePath in System.IO.Directory.EnumerateFiles( musicDir, "*.ogg" ) )
+		{
+			yield return new MountContextAddCommand(
+				Type: ResourceType.Sound,
+				Path: GetRelativeFilePathForMusic( oggFilePath ),
+				Loader: new GameMakerMusic( oggFilePath )
+			);
+		}
+	}
+
+	public string GetRelativeFilePathForMusic( string absoluteFilePath )
+	{
+		return $"music/{Path.GetFileNameWithoutExtension( absoluteFilePath )}.vsnd";
 	}
 
 	public string GetAbsoluteFilePathForRecord( ChunkRecord record )
