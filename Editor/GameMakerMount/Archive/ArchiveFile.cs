@@ -10,6 +10,7 @@ public class ArchiveFile
 	public const string ChunkMagicString = "STRG";
 	public const string ChunkMagicTexture = "TXTR";
 	public const string ChunkMagicSound = "SOND";
+	public const string ChunkMagicAudioGroup = "AGRP";
 	public const string ChunkMagicAudio = "AUDO";
 
 	public ArchiveFile( string filePath )
@@ -18,6 +19,7 @@ public class ArchiveFile
 
 		LoadAllChunkHeaders();
 		LoadAllChunkRecords();
+		LoadExternalDependencies();
 	}
 
 	public string FilePath { get; }
@@ -29,8 +31,9 @@ public class ArchiveFile
 		{ ChunkMagicSprite, typeof(SpriteChunk) },
 		{ ChunkMagicTexturePage, typeof(TexturePageChunk) },
 		{ ChunkMagicTexture, typeof(TextureChunk) },
-		{ ChunkMagicAudio, typeof(AudioChunk) },
-		{ ChunkMagicSound, typeof(SoundChunk) }
+		{ ChunkMagicSound, typeof(SoundChunk) },
+		{ ChunkMagicAudioGroup, typeof(AudioGroupChunk) },
+		{ ChunkMagicAudio, typeof(AudioChunk) }
 	};
 
 	public readonly Dictionary<string, ArchiveChunk> Chunks = [];
@@ -44,12 +47,17 @@ public class ArchiveFile
 	public List<SpriteChunk.Record> Sprites = [];
 	public Dictionary<int, SpriteChunk.Record> SpriteOffsets = [];
 
-	public List<AudioChunk.Record> Audio = [];
-	public Dictionary<int, AudioChunk.Record> AudioOffsets = [];
-
 	public List<SoundChunk.Record> Sounds = [];
 	public Dictionary<int, SoundChunk.Record> SoundOffsets = [];
 
+	public List<AudioGroupChunk.Record> AudioGroups = [];
+	public Dictionary<int, AudioGroupChunk.Record> AudioGroupOffsets = [];
+	
+	public List<AudioChunk.Record> Audio = [];
+	public Dictionary<int, AudioChunk.Record> AudioOffsets = [];
+
+	public List<ArchiveFile> ExternalAudioGroupData = [];
+	
 	private void LoadAllChunkHeaders()
 	{
 		using var fs = File.OpenRead( FilePath );
@@ -103,8 +111,9 @@ public class ArchiveFile
 		Load<TextureChunk, TextureChunk.Record>( ChunkMagicTexture, ref Textures, ref TextureOffsets );
 		Load<TexturePageChunk, TexturePageChunk.Record>( ChunkMagicTexturePage, ref TexturePages, ref TexturePageOffsets );
 		Load<SpriteChunk, SpriteChunk.Record>( ChunkMagicSprite, ref Sprites, ref SpriteOffsets );
-		Load<AudioChunk, AudioChunk.Record>( ChunkMagicAudio, ref Audio, ref AudioOffsets );
 		Load<SoundChunk, SoundChunk.Record>( ChunkMagicSound, ref Sounds, ref SoundOffsets );
+		Load<AudioGroupChunk, AudioGroupChunk.Record>( ChunkMagicAudioGroup, ref AudioGroups, ref AudioGroupOffsets );
+		Load<AudioChunk, AudioChunk.Record>( ChunkMagicAudio, ref Audio, ref AudioOffsets );
 		return; 
 
 		void Load<TChunk, TRecord>( string magic, ref List<TRecord> list, ref Dictionary<int, TRecord> offsets )
@@ -116,6 +125,37 @@ public class ArchiveFile
 
 			list = listChunk.Records.ToList();
 			offsets = list.ToDictionary( r => r.RecordData.Offset );
+		}
+	}
+
+	private void LoadExternalDependencies()
+	{
+		LoadAudioGroups();
+	}
+
+	private void LoadAudioGroups()
+	{
+		// If there are no audio groups other than the default, there's nothing to load.
+		if ( AudioGroups.Count < 2 )
+			return;
+
+		var fileEnumOptions = new EnumerationOptions() { RecurseSubdirectories = true };
+		var searchInDir = Path.GetDirectoryName( FilePath );
+		
+		// If there's no directory... where are we searching? Don't search the hard drive root. That'd be rude.
+		if ( string.IsNullOrWhiteSpace( searchInDir ) )
+			return;
+		
+		for ( int i = 1; i < AudioGroups.Count; i++ )
+		{
+			var match = Directory
+				.GetFiles( searchInDir, $"audiogroup{i}.dat", fileEnumOptions )
+				.FirstOrDefault();
+
+			if ( string.IsNullOrWhiteSpace( match ) )
+				continue;
+
+			ExternalAudioGroupData.Add( new ArchiveFile( match ) );
 		}
 	}
 }

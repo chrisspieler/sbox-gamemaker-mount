@@ -84,20 +84,25 @@ public abstract class GameMakerMount : BaseGameMount
 					continue;
 				}
 				
-				if ( sound.AudioId >= 0 )
-				{
-					var audio = archive.Audio[sound.AudioId];
-					var path = GetRelativeFilePathForRecord( sound );
-					yield return new MountContextAddCommand(
-						Type: ResourceType.Sound,
-						Path: path,
-						Loader: new GameMakerEmbeddedAudio( audio, sound.Name, false )
-					);
-				}
-				else
+				if ( sound.AudioId < 0 )
 				{
 					Log.Info( $"{sound.FileName} is not embedded." );
+					continue;
+					
 				}
+
+				var audioArchive = sound.AudioGroupId == 0
+					? archive
+					: archive.ExternalAudioGroupData[sound.AudioGroupId - 1];
+				
+				var audio = audioArchive.Audio[sound.AudioId];
+				var path = GetRelativeFilePathForRecord( sound );
+				
+				yield return new MountContextAddCommand(
+					Type: ResourceType.Sound,
+					Path: path,
+					Loader: new GameMakerEmbeddedAudio( audio, sound.Name, false )
+				);
 			}
 		}
 
@@ -127,11 +132,10 @@ public abstract class GameMakerMount : BaseGameMount
 		{
 			 TextureChunk.Record => $"{archiveIndex}/texture/TXTR_{record.Index}.vtex",
 			 SpriteChunk.Record spriteRecord => $"{archiveIndex}/sprite/{spriteRecord.Name}.json",
-			 SoundChunk.Record soundRecord => $"{archiveIndex}/sound/{archiveIndex}_{soundRecord.Name}.vsnd",
+			 SoundChunk.Record soundRecord => $"{archiveIndex}/sound/{soundRecord.Name}.vsnd",
 			 _ => $"{archiveIndex}/unknown/{record.Index}"
 		};
 	}
-	
 
 	private void RefreshArchives()
 	{

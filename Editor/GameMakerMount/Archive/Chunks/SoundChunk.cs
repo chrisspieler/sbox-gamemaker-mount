@@ -12,6 +12,7 @@ public record SoundChunk( ArchiveData ChunkData, string Magic, int ElementCount,
 		string FileName,
 		float Volume,
 		float Pitch,
+		int AudioGroupId,
 		int AudioId
 	) : ChunkRecord( Index, RecordData );
 
@@ -35,6 +36,7 @@ public record SoundChunk( ArchiveData ChunkData, string Magic, int ElementCount,
 			FileName: fileName,
 			Volume: volume,
 			Pitch: pitch,
+			AudioGroupId : audioGroupId,
 			AudioId: audioId
 		);
 	}
