@@ -9,6 +9,7 @@ public class ArchiveFile
 	public const string ChunkMagicTexturePage = "TPAG";
 	public const string ChunkMagicString = "STRG";
 	public const string ChunkMagicTexture = "TXTR";
+	public const string ChunkMagicAudio = "AUDO";
 
 	public ArchiveFile( string filePath )
 	{
@@ -26,7 +27,8 @@ public class ArchiveFile
 	{
 		{ ChunkMagicSprite, typeof(SpriteChunk) },
 		{ ChunkMagicTexturePage, typeof(TexturePageChunk) },
-		{ ChunkMagicTexture, typeof(TextureChunk) }
+		{ ChunkMagicTexture, typeof(TextureChunk) },
+		{ ChunkMagicAudio, typeof(AudioChunk) }
 	};
 
 	public readonly Dictionary<string, ArchiveChunk> Chunks = [];
@@ -39,6 +41,9 @@ public class ArchiveFile
 	
 	public List<SpriteChunk.Record> Sprites = [];
 	public Dictionary<int, SpriteChunk.Record> SpriteOffsets = [];
+
+	public List<AudioChunk.Record> Audio = [];
+	public Dictionary<int, AudioChunk.Record> AudioOffsets = [];
 
 	private void LoadAllChunkHeaders()
 	{
@@ -93,6 +98,7 @@ public class ArchiveFile
 		Load<TextureChunk, TextureChunk.Record>( ChunkMagicTexture, ref Textures, ref TextureOffsets );
 		Load<TexturePageChunk, TexturePageChunk.Record>( ChunkMagicTexturePage, ref TexturePages, ref TexturePageOffsets );
 		Load<SpriteChunk, SpriteChunk.Record>( ChunkMagicSprite, ref Sprites, ref SpriteOffsets );
+		Load<AudioChunk, AudioChunk.Record>( ChunkMagicAudio, ref Audio, ref AudioOffsets );
 		return; 
 
 		void Load<TChunk, TRecord>( string magic, ref List<TRecord> list, ref Dictionary<int, TRecord> offsets )

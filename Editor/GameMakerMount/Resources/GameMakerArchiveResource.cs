@@ -10,8 +10,8 @@ public abstract class GameMakerArchiveResource : ResourceLoader<GameMakerMount>
 	{
 		if ( archiveData.Offset < 0 || archiveData.Offset + archiveData.DataLength > archiveData.Archive.DataLength )
 		{
-			throw new IndexOutOfRangeException(
-				 "$\"Offset {offset:X8} + length {dataLength:X8} would exceed length of archive file ({archive.DataLength:X8})\""
+			Log.Info(
+				 $"Offset {archiveData.Offset:X8} + length {archiveData.DataLength:X8} would exceed length of archive file ({archiveData.Archive.DataLength:X8}). Just thought you'd want to know."
 			);
 		}
 

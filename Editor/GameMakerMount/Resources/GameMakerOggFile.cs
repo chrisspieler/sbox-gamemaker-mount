@@ -7,7 +7,7 @@ using Sandbox.Diagnostics;
 
 namespace GameMakerMount;
 
-public class GameMakerMusic( string filePath ) : ResourceLoader<GameMakerMount>
+public class GameMakerOggFile( string filePath ) : ResourceLoader<GameMakerMount>
 {
 	public string FilePath { get; private set; } = filePath;
 

@@ -75,6 +75,16 @@ public abstract class GameMakerMount : BaseGameMount
 					Loader: new GameMakerSprite( sprite )
 				);
 			}
+
+			foreach ( var audio in archive.Audio )
+			{
+				var path = GetRelativeFilePathForRecord( audio );
+				yield return new MountContextAddCommand(
+					Type: ResourceType.Sound,
+					Path: path,
+					Loader: new GameMakerEmbeddedAudio( audio, Path.GetFileNameWithoutExtension( path ), false )
+				);
+			}
 		}
 
 		var musicDir = Path.Combine( AppDirectory, MusicDirectory );
@@ -83,7 +93,7 @@ public abstract class GameMakerMount : BaseGameMount
 			yield return new MountContextAddCommand(
 				Type: ResourceType.Sound,
 				Path: GetRelativeFilePathForMusic( oggFilePath ),
-				Loader: new GameMakerMusic( oggFilePath )
+				Loader: new GameMakerOggFile( oggFilePath )
 			);
 		}
 	}
@@ -103,6 +113,7 @@ public abstract class GameMakerMount : BaseGameMount
 		{
 			 TextureChunk.Record => $"{archiveIndex}/texture/TXTR_{record.Index}.vtex",
 			 SpriteChunk.Record spriteRecord => $"{archiveIndex}/sprite/{spriteRecord.Name}.json",
+			 AudioChunk.Record => $"{archiveIndex}/sound/{archiveIndex}_snd_{record.Index}.vsnd",
 			 _ => $"{archiveIndex}/unknown/{record.Index}"
 		};
 	}
