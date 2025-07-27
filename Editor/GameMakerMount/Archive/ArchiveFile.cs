@@ -9,11 +9,11 @@ public class ArchiveFile
 	public const string ChunkMagicTexturePage = "TPAG";
 	public const string ChunkMagicString = "STRG";
 	public const string ChunkMagicTexture = "TXTR";
-	
+
 	public ArchiveFile( string filePath )
 	{
 		FilePath = filePath;
-		
+
 		LoadAllChunkHeaders();
 		LoadAllChunkRecords();
 	}
@@ -24,15 +24,21 @@ public class ArchiveFile
 	// TODO: Make this static once every chunk is implemented.
 	private readonly Dictionary<string, Type> _listChunkTypes = new()
 	{
-		{ ChunkMagicSprite, typeof( SpriteChunk ) },
+		{ ChunkMagicSprite, typeof(SpriteChunk) },
 		{ ChunkMagicTexturePage, typeof(TexturePageChunk) },
 		{ ChunkMagicTexture, typeof(TextureChunk) }
 	};
+
+	public readonly Dictionary<string, ArchiveChunk> Chunks = [];
 	
-	public Dictionary<string, ArchiveChunk> Chunks { get; } = [];
-	public Dictionary<int, SpriteChunk.Record> Sprites { get; private set; } = [];
-	public Dictionary<int, TexturePageChunk.Record> TexturePages { get; private set; } = [];
-	public Dictionary<int, TextureChunk.Record> Textures { get; private set; } = [];
+	public List<TextureChunk.Record> Textures = [];
+	public Dictionary<int, TextureChunk.Record> TextureOffsets = [];
+	
+	public List<TexturePageChunk.Record> TexturePages = [];
+	public Dictionary<int, TexturePageChunk.Record> TexturePageOffsets = [];
+	
+	public List<SpriteChunk.Record> Sprites = [];
+	public Dictionary<int, SpriteChunk.Record> SpriteOffsets = [];
 
 	private void LoadAllChunkHeaders()
 	{
@@ -84,19 +90,20 @@ public class ArchiveFile
 
 	private void LoadAllChunkRecords()
 	{
-		Textures = LoadRecordSet<TextureChunk, TextureChunk.Record>( ChunkMagicTexture );
-		TexturePages = LoadRecordSet<TexturePageChunk, TexturePageChunk.Record>( ChunkMagicTexturePage );
-		Sprites = LoadRecordSet<SpriteChunk, SpriteChunk.Record>( ChunkMagicSprite );
-		return;
+		Load<TextureChunk, TextureChunk.Record>( ChunkMagicTexture, ref Textures, ref TextureOffsets );
+		Load<TexturePageChunk, TexturePageChunk.Record>( ChunkMagicTexturePage, ref TexturePages, ref TexturePageOffsets );
+		Load<SpriteChunk, SpriteChunk.Record>( ChunkMagicSprite, ref Sprites, ref SpriteOffsets );
+		return; 
 
-		Dictionary<int, TRecord> LoadRecordSet<TChunk, TRecord>( string magic ) 
+		void Load<TChunk, TRecord>( string magic, ref List<TRecord> list, ref Dictionary<int, TRecord> offsets )
 			where TChunk : ArchiveListChunk<TRecord>
 			where TRecord : ChunkRecord
 		{
 			if ( !Chunks.TryGetValue( magic, out var chunk ) || chunk is not TChunk listChunk )
-				return [];
-			
-			return listChunk.Records.ToDictionary( r => r.RecordData.Offset );
+				return;
+
+			list = listChunk.Records.ToList();
+			offsets = list.ToDictionary( r => r.RecordData.Offset );
 		}
 	}
 }

@@ -11,7 +11,12 @@ public abstract class GameMakerMount : BaseGameMount
 	
 	protected abstract long AppId { get; }
 	protected string AppDirectory { get; private set; }
-	protected List<ArchiveFile> Archives { get; set; } = [];
+
+	public IReadOnlyList<ArchiveFile> Archives
+	{
+		get => _archives.AsReadOnly();
+	}
+	private List<ArchiveFile> _archives = [];
 
 	protected virtual bool MultiArchive => false;
 
@@ -26,7 +31,7 @@ public abstract class GameMakerMount : BaseGameMount
 
 	private void ClearLoadedData()
 	{
-		Archives.Clear();
+		_archives.Clear();
 	}
 
 	protected override Task Mount( MountContext context )
@@ -46,38 +51,50 @@ public abstract class GameMakerMount : BaseGameMount
 
 	private IEnumerable<MountContextAddCommand> GetAllResources()
 	{
-		for ( int i = 0; i < Archives.Count; i++ )
+		foreach (var archive in Archives)
 		{
-			var archive = Archives[i];
-			
 			// Load all textures
 			Log.Info( $"Creating resources for {archive.Textures.Count} {ArchiveFile.ChunkMagicTexture} records." );
-			foreach ( var (offset, texture) in archive.Textures )
+			foreach (var t in archive.Textures)
 			{
 				yield return new MountContextAddCommand( 
-						Type: ResourceType.Texture,
-						Path: $"{i}/texture/txtr_{offset}",
-						Loader: new GameMakerTexture( texture.TextureData ) 
-					);
+					Type: ResourceType.Texture,
+					Path: GetRelativeFilePathForRecord( t ),
+					Loader: new GameMakerTexture( t ) 
+				);
 			}
 			
 			// Load all sprites
 			Log.Info( $"Creating resources for {archive.Sprites.Count} {ArchiveFile.ChunkMagicSprite} records." );
-			foreach ( var (_, sprite) in archive.Sprites )
+			foreach ( var sprite in archive.Sprites )
 			{
 				yield return new MountContextAddCommand(
-						Type: ResourceType.Material,
-						Path: $"{i}/sprite/{sprite.Name}",
-						Loader: new GameMakerSprite( sprite )
-					);
+					Type: ResourceType.Text,
+					Path: GetRelativeFilePathForRecord( sprite ),
+					Loader: new GameMakerSprite( sprite )
+				);
 			}
 		}
+	}
+
+	public string GetAbsoluteFilePathForRecord( ChunkRecord record )
+		=> $"mount://{Ident}/{GetRelativeFilePathForRecord( record )}";
+	
+	public string GetRelativeFilePathForRecord( ChunkRecord record )
+	{
+		var archiveIndex = _archives.IndexOf( record.RecordData.Archive );
+		return record switch
+		{
+			 TextureChunk.Record => $"{archiveIndex}/texture/TXTR_{record.Index}.vtex",
+			 SpriteChunk.Record spriteRecord => $"{archiveIndex}/sprite/{spriteRecord.Name}.json",
+			 _ => $"{archiveIndex}/unknown/{record.Index}"
+		};
 	}
 	
 
 	private void RefreshArchives()
 	{
-		Archives.Clear();
+		_archives.Clear();
 
 		var options = new EnumerationOptions() { RecurseSubdirectories = true };
 		var archives = System.IO.Directory.EnumerateFiles(
@@ -90,11 +107,11 @@ public abstract class GameMakerMount : BaseGameMount
 
 		if ( MultiArchive )
 		{
-			Archives.AddRange( archives );
+			_archives.AddRange( archives );
 		}
 		else if ( archives.Length > 0  )
 		{
-			Archives.Add( archives[0] );
+			_archives.Add( archives[0] );
 		}
 	}
 }

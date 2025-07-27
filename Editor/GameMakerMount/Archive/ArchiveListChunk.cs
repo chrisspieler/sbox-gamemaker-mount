@@ -26,7 +26,7 @@ public abstract record ArchiveListChunk<TElement>( ArchiveData ChunkData, string
 	private TElement[] _records = [];
 
 	public bool IsLoaded => _records.Length == ElementCount;
-	protected abstract TElement ReadRecord( int recordOffset, FileStream fs, BinaryReader br );
+	protected abstract TElement ReadRecord( int recordIndex, int recordOffset, FileStream fs, BinaryReader br );
 	
 	public void ReadAllRecordsFromDisk()
 	{
@@ -37,7 +37,7 @@ public abstract record ArchiveListChunk<TElement>( ArchiveData ChunkData, string
 		for ( int i = 0; i < ElementCount; i++ )
 		{
 			fs.Seek( ElementOffsets[i], SeekOrigin.Begin );
-			_records[i] = ReadRecord( (int)fs.Position, fs, br );
+			_records[i] = ReadRecord( i, (int)fs.Position, fs, br );
 		}
 	}
 

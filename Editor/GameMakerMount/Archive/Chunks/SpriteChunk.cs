@@ -6,6 +6,7 @@ public record SpriteChunk( ArchiveData ChunkData, string Magic, int ElementCount
 	: ArchiveListChunk<SpriteChunk.Record>( ChunkData, Magic,ElementCount, ElementOffsets )
 {
 	public record Record(
+		int Index,
 		ArchiveData RecordData,
 		string Name,
 		Vector2Int Size,
@@ -13,10 +14,10 @@ public record SpriteChunk( ArchiveData ChunkData, string Magic, int ElementCount
 		Vector2Int Origin,
 		int TextureCount,
 		int[] TextureOffsets
-	) : ChunkRecord( RecordData );
+	) : ChunkRecord( Index, RecordData );
 
 	public override string ChunkMagic => ArchiveFile.ChunkMagicSprite;
-	protected override Record ReadRecord( int recordOffset, FileStream fs, BinaryReader br )
+	protected override Record ReadRecord( int recordIndex, int recordOffset, FileStream fs, BinaryReader br )
 	{
 		var nameAddress = br.ReadInt32();
 		var returnAddress = fs.Position;
@@ -49,6 +50,7 @@ public record SpriteChunk( ArchiveData ChunkData, string Magic, int ElementCount
 		
 
 		return new Record( 
+				Index: recordIndex,
 				RecordData: new ArchiveData( ChunkData.Archive, recordOffset, (int)fs.Position - recordOffset ), 
 				Name: name, 
 				Size: size,

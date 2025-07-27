@@ -1,3 +1,3 @@
 ﻿namespace GameMakerMount;
 
-public record ChunkRecord( ArchiveData RecordData );
+public record ChunkRecord( int Index, ArchiveData RecordData );

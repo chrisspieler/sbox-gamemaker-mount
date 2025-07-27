@@ -4,8 +4,8 @@ using FileSystem = Sandbox.FileSystem;
 
 namespace GameMakerMount;
 
-public class GameMakerTexture( ArchiveData data )
-	: GameMakerArchiveResource( data )
+public class GameMakerTexture( TextureChunk.Record textureRecord )
+	: GameMakerArchiveResource( textureRecord.TextureData )
 {
 	protected override object LoadFromData( MemoryStream ms, BinaryReader br )
 	{
@@ -23,9 +23,11 @@ public class GameMakerTexture( ArchiveData data )
 		Log.Info( $"Creating {width}x{height} texture" );
 		
 		// Create a texture using that raw data. Apparently it's BGRA.
-		return Texture.Create( width, height, ImageFormat.BGRA8888 )
+		var texture = Texture.Create( width, height, ImageFormat.BGRA8888 )
 			.WithData( imageData )
+			.WithName( Host.GetRelativeFilePathForRecord( textureRecord ) )
 			.Finish();
+		return texture;
 
 		Stream Decompress()
 		{

@@ -6,16 +6,17 @@ public record TextureChunk( ArchiveData ChunkData, string Magic, int ElementCoun
 	: ArchiveListChunk<TextureChunk.Record>( ChunkData, Magic, ElementCount, ElementOffsets )
 {
 	public record Record(
+		int Index,
 		ArchiveData RecordData,
 		int Scaled,
 		int GeneratedMips,
 		Vector2Int Size,
 		ArchiveData TextureData
-	) : ChunkRecord( RecordData );
+	) : ChunkRecord( Index, RecordData );
 	
 	public override string ChunkMagic => ArchiveFile.ChunkMagicTexture;
 
-	protected override Record ReadRecord( int recordOffset, FileStream fs, BinaryReader br )
+	protected override Record ReadRecord( int recordIndex, int recordOffset, FileStream fs, BinaryReader br )
 	{
 		int scaled = br.ReadInt32();
 		int generatedMips = br.ReadInt32();
@@ -32,6 +33,7 @@ public record TextureChunk( ArchiveData ChunkData, string Magic, int ElementCoun
 			);
 
 		return new Record(
+				Index: recordIndex,
 				RecordData: new ArchiveData( ChunkData.Archive, recordOffset, (int)fs.Position - recordOffset ),
 				Scaled: scaled,
 				GeneratedMips: generatedMips,

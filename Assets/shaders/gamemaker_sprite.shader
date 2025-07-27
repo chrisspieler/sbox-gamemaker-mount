@@ -38,11 +38,12 @@ VS
 PS
 {
 	#define CUSTOM_MATERIAL_INPUTS 1
+	#include "common/classes/Bindless.hlsl"
 	#include "common/pixel.hlsl"
 
-	Texture2D g_AtlasTexture < Attribute( "AtlasTexture" ); SrgbRead( true ); >;
-	float2 g_AtlasSize < Attribute( "AtlasSize" ); >;
-	float4 g_TexturePageRect < Attribute( "TexturePageRect" ); >;
+	int g_iAtlasTextureIndex < Attribute( "g_iAtlasTextureIndex" ); SrgbRead( true ); >;
+	float2 g_vAtlasSize < Attribute( "g_vAtlasSize" ); Default2( 2048, 2048 );>;
+	float4 g_vTexturePageRect < Attribute( "g_vTexturePageRect" ); Default4( 64, 64, 64, 64 ); >;
 
 	RenderState( CullMode, NONE );
 	RenderState( DepthWriteEnable, true );
@@ -50,11 +51,12 @@ PS
 
 	float4 MainPs( PS_INPUT i ) : SV_Target0
 	{
-		float2 offset = g_TexturePageRect.xy / g_AtlasSize.xy;
-		float2 size = g_TexturePageRect.zw / g_AtlasSize.xy * i.vTextureCoords.xy;
+		float2 offset = g_vTexturePageRect.xy / g_vAtlasSize.xy;
+		float2 size = g_vTexturePageRect.zw / g_vAtlasSize.xy * i.vTextureCoords.xy;
 		// Calculate the offset plus size in UV coordinates.
 		float2 uv = offset + size;
-		float4 col = g_AtlasTexture.Sample( g_sPointClamp, uv.xy );
+		Texture2D atlasTexture = Bindless::GetTexture2D( g_iAtlasTextureIndex, true );
+		float4 col = atlasTexture.Sample( g_sPointClamp, uv.xy );
 		return col * i.vVertexColor;
 	}
 }
