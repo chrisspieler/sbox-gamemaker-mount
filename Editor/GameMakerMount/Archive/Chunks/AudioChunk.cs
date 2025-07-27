@@ -22,7 +22,7 @@ public record AudioChunk( ArchiveData ChunkData, string Magic, int ElementCount,
 		ArchiveData AudioData
 	) : ChunkRecord( Index, RecordData );
 	
-	public override string ChunkMagic => "AUDO";
+	public override string ChunkMagic => ArchiveFile.ChunkMagicAudio;
 	
 	
 	protected override Record ReadRecord( int recordIndex, int recordOffset, FileStream fs, BinaryReader br )

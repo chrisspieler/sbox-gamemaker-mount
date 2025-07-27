@@ -16,4 +16,13 @@ public static class BinaryReaderExtensions
 		}
 		return elements;
 	}
+	
+	public static string ReadGameMakerStringFromId( this BinaryReader br )
+	{
+		var offset = br.ReadInt32();
+		var returnAddress = br.BaseStream.Position;
+		var foundString = br.BaseStream.ReadNullTerminatedString(offset);
+		br.BaseStream.Seek( returnAddress, SeekOrigin.Begin );
+		return foundString;
+	}
 }
