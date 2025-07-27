@@ -1,6 +1,5 @@
 ﻿using System.IO;
-using UndertaleModLib.Util;
-using FileSystem = Sandbox.FileSystem;
+using DogScepterLib.Project.Util;
 
 namespace GameMakerMount;
 
@@ -15,10 +14,10 @@ public class GameMakerTexture( TextureChunk.Record textureRecord )
 		// How big is the data we are decompressing?
 		var uncompressedSize = br.ReadInt32();
 		
-		var decompressedStream = Decompress();
+		var decompressedData = Decompress();
 		
 		// Convert the decompressed QOI file to raw bytes.
-		var imageData = QoiConverter.GetImageFromStream( decompressedStream, out int width, out int height );
+		var imageData = QoiConverter.GetImageFromSpan( decompressedData, out int width, out int height );
 		
 		Log.Info( $"Creating {width}x{height} texture" );
 		
@@ -29,15 +28,14 @@ public class GameMakerTexture( TextureChunk.Record textureRecord )
 			.Finish();
 		return texture;
 
-		Stream Decompress()
+		byte[] Decompress()
 		{
 			Log.Info( "Uncompressed size: " + uncompressedSize );
 			var buffer = new byte[uncompressedSize];
 			var unzipStream = new BZip2InputStream( ms );
 			var bytesRead = unzipStream.Read( buffer );
 			Log.Info( $"Read {bytesRead} bytes from BZ2 stream" );
-		
-			return new MemoryStream( buffer );
+			return buffer;
 		}
 	}
 }
