@@ -119,11 +119,11 @@ public abstract class GameMakerMount : BaseGameMount
 
 	public string GetRelativeFilePathForMusic( string absoluteFilePath )
 	{
-		return $"music/{Path.GetFileNameWithoutExtension( absoluteFilePath )}.vsnd";
+		return $@"music\{Path.GetFileNameWithoutExtension( absoluteFilePath )}.vsnd";
 	}
 
 	public string GetAbsoluteFilePathForRecord( ChunkRecord record )
-		=> $"mount://{Ident}/{GetRelativeFilePathForRecord( record )}";
+		=> $@"mount:\\{Ident}\{GetRelativeFilePathForRecord( record )}";
 	
 	public string GetRelativeFilePathForRecord( ChunkRecord record )
 	{
@@ -137,10 +137,10 @@ public abstract class GameMakerMount : BaseGameMount
 		
 		var relativePath = record switch
 		{
-			 TextureChunk.Record => $"texture/TXTR_{record.Index}.vtex",
-			 SpriteChunk.Record spriteRecord => $"sprite/{spriteRecord.Name}.json",
-			 SoundChunk.Record soundRecord => $"sound/{soundRecord.Name}.vsnd",
-			 _ => $"unknown/{record.Index}"
+			 TextureChunk.Record => $@"texture\TXTR_{record.Index}.vtex",
+			 SpriteChunk.Record spriteRecord => $@"sprite\{spriteRecord.Name}.json",
+			 SoundChunk.Record soundRecord => $@"sound\{soundRecord.Name}.vsnd",
+			 _ => $@"unknown\{record.Index}"
 		};
 		return Path.Combine( relativeDir, relativePath );
 	}
