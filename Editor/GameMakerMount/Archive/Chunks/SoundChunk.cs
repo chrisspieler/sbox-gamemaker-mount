@@ -3,7 +3,7 @@
 namespace GameMakerMount;
 
 public record SoundChunk( ArchiveData ChunkData, int ElementCount, int[] ElementOffsets ) 
-	: ArchiveListChunk<SoundChunk.Record>( ChunkData, ArchiveFile.ChunkMagicSound, ElementCount, ElementOffsets )
+	: ArchiveListChunk<SoundChunk.Record>( ChunkData, ChunkMagic.Sounds, ElementCount, ElementOffsets )
 {
 	public record Record(
 		int Index,

@@ -3,7 +3,7 @@
 namespace GameMakerMount;
 
 public record AudioChunk( ArchiveData ChunkData, int ElementCount, int[] ElementOffsets )
-	: ArchiveListChunk<AudioChunk.Record>( ChunkData, ArchiveFile.ChunkMagicAudio, ElementCount, ElementOffsets )
+	: ArchiveListChunk<AudioChunk.Record>( ChunkData, ChunkMagic.Audio, ElementCount, ElementOffsets )
 {
 	public enum AudioFormat
 	{

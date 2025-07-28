@@ -55,7 +55,7 @@ public abstract class GameMakerMount : BaseGameMount
 		foreach (var archive in Archives)
 		{
 			// Load all textures
-			Log.Info( $"Creating resources for {archive.Textures.Count} {ArchiveFile.ChunkMagicTexture} records." );
+			Log.Info( $"Creating resources for {archive.Textures.Count} {ChunkMagic.Textures} records." );
 			foreach (var t in archive.Textures)
 			{
 				yield return new MountContextAddCommand( 
@@ -66,7 +66,7 @@ public abstract class GameMakerMount : BaseGameMount
 			}
 			
 			// Load all sprites
-			Log.Info( $"Creating resources for {archive.Sprites.Count} {ArchiveFile.ChunkMagicSprite} records." );
+			Log.Info( $"Creating resources for {archive.Sprites.Count} {ChunkMagic.Sprites} records." );
 			foreach ( var sprite in archive.Sprites )
 			{
 				yield return new MountContextAddCommand(

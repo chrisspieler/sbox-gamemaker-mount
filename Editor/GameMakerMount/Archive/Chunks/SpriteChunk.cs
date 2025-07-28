@@ -3,7 +3,7 @@
 namespace GameMakerMount;
 
 public record SpriteChunk( ArchiveData ChunkData, int ElementCount, int[] ElementOffsets )
-	: ArchiveListChunk<SpriteChunk.Record>( ChunkData, ArchiveFile.ChunkMagicSprite, ElementCount, ElementOffsets )
+	: ArchiveListChunk<SpriteChunk.Record>( ChunkData, ChunkMagic.Sprites, ElementCount, ElementOffsets )
 {
 	public record Record(
 		int Index,

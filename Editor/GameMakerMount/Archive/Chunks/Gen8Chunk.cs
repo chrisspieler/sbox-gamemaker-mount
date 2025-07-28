@@ -22,7 +22,7 @@ public record Gen8Chunk(
 		int UnixTimestamp,
 		int ActiveTargets,
 		string DisplayName
-	) : ArchiveChunk( ChunkData, ArchiveFile.ChunkMagicGen8 )
+	) : ArchiveChunk( ChunkData, ChunkMagic.Metadata )
 {
 	public static Gen8Chunk Load( ArchiveData archiveData )
 	{

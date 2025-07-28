@@ -4,16 +4,6 @@ namespace GameMakerMount;
 
 public class ArchiveFile
 {
-	public const string ChunkMagicForm = "FORM";
-	public const string ChunkMagicGen8 = "GEN8";
-	public const string ChunkMagicSprite = "SPRT";
-	public const string ChunkMagicTexturePage = "TPAG";
-	public const string ChunkMagicString = "STRG";
-	public const string ChunkMagicTexture = "TXTR";
-	public const string ChunkMagicSound = "SOND";
-	public const string ChunkMagicAudioGroup = "AGRP";
-	public const string ChunkMagicAudio = "AUDO";
-
 	public ArchiveFile( string filePath )
 	{
 		FilePath = filePath;
@@ -30,21 +20,15 @@ public class ArchiveFile
 	// TODO: Make this static once every chunk is implemented.
 	private readonly Dictionary<string, Type> _listChunkTypes = new()
 	{
-		{ ChunkMagicSprite, typeof(SpriteChunk) },
-		{ ChunkMagicTexturePage, typeof(TexturePageChunk) },
-		{ ChunkMagicTexture, typeof(TextureChunk) },
-		{ ChunkMagicSound, typeof(SoundChunk) },
-		{ ChunkMagicAudioGroup, typeof(AudioGroupChunk) },
-		{ ChunkMagicAudio, typeof(AudioChunk) }
+		{ ChunkMagic.Sprites,		typeof(SpriteChunk) },
+		{ ChunkMagic.Sounds,		typeof(SoundChunk) },
+		{ ChunkMagic.AudioGroups,	typeof(AudioGroupChunk) },
+		{ ChunkMagic.TexturePages,	typeof(TexturePageChunk) },
+		{ ChunkMagic.Textures,		typeof(TextureChunk) },
+		{ ChunkMagic.Audio,			typeof(AudioChunk) }
 	};
 
 	public readonly Dictionary<string, ArchiveChunk> Chunks = [];
-	
-	public List<TextureChunk.Record> Textures = [];
-	public Dictionary<int, TextureChunk.Record> TextureOffsets = [];
-	
-	public List<TexturePageChunk.Record> TexturePages = [];
-	public Dictionary<int, TexturePageChunk.Record> TexturePageOffsets = [];
 	
 	public List<SpriteChunk.Record> Sprites = [];
 	public Dictionary<int, SpriteChunk.Record> SpriteOffsets = [];
@@ -55,10 +39,16 @@ public class ArchiveFile
 	public List<AudioGroupChunk.Record> AudioGroups = [];
 	public Dictionary<int, AudioGroupChunk.Record> AudioGroupOffsets = [];
 	
+	public List<TexturePageChunk.Record> TexturePages = [];
+	public Dictionary<int, TexturePageChunk.Record> TexturePageOffsets = [];
+	
+	public List<TextureChunk.Record> Textures = [];
+	public Dictionary<int, TextureChunk.Record> TextureOffsets = [];
+	
 	public List<AudioChunk.Record> Audio = [];
 	public Dictionary<int, AudioChunk.Record> AudioOffsets = [];
 
-	public List<ArchiveFile> ExternalAudioGroupData = [];
+	public readonly List<ArchiveFile> ExternalAudioGroupData = [];
 	
 	private void LoadAllChunkHeaders()
 	{
@@ -115,23 +105,23 @@ public class ArchiveFile
 
 		void LoadGen8Chunk()
 		{
-			if ( !Chunks.TryGetValue( ChunkMagicGen8, out var existingChunk ) )
+			if ( !Chunks.TryGetValue( ChunkMagic.Metadata, out var existingChunk ) )
 				return;
 		
 			var gen8Chunk = Gen8Chunk.Load( existingChunk.ChunkData );
-			Chunks[ChunkMagicGen8] = gen8Chunk;
+			Chunks[ChunkMagic.Metadata] = gen8Chunk;
 			Log.Info( $"Application \"{gen8Chunk.DisplayName}\" uses bytecode version: {gen8Chunk.ByteCodeVersion}" );
 		}
 	}
 
 	private void LoadAllChunkRecords()
 	{
-		Load<TextureChunk, TextureChunk.Record>( ChunkMagicTexture, ref Textures, ref TextureOffsets );
-		Load<TexturePageChunk, TexturePageChunk.Record>( ChunkMagicTexturePage, ref TexturePages, ref TexturePageOffsets );
-		Load<SpriteChunk, SpriteChunk.Record>( ChunkMagicSprite, ref Sprites, ref SpriteOffsets );
-		Load<SoundChunk, SoundChunk.Record>( ChunkMagicSound, ref Sounds, ref SoundOffsets );
-		Load<AudioGroupChunk, AudioGroupChunk.Record>( ChunkMagicAudioGroup, ref AudioGroups, ref AudioGroupOffsets );
-		Load<AudioChunk, AudioChunk.Record>( ChunkMagicAudio, ref Audio, ref AudioOffsets );
+		Load<SpriteChunk, SpriteChunk.Record>( ChunkMagic.Sprites, ref Sprites, ref SpriteOffsets );
+		Load<SoundChunk, SoundChunk.Record>( ChunkMagic.Sounds, ref Sounds, ref SoundOffsets );
+		Load<AudioGroupChunk, AudioGroupChunk.Record>( ChunkMagic.AudioGroups, ref AudioGroups, ref AudioGroupOffsets );
+		Load<TexturePageChunk, TexturePageChunk.Record>( ChunkMagic.TexturePages, ref TexturePages, ref TexturePageOffsets );
+		Load<TextureChunk, TextureChunk.Record>( ChunkMagic.Textures, ref Textures, ref TextureOffsets );
+		Load<AudioChunk, AudioChunk.Record>( ChunkMagic.Audio, ref Audio, ref AudioOffsets );
 		return; 
 
 		void Load<TChunk, TRecord>( string magic, ref List<TRecord> list, ref Dictionary<int, TRecord> offsets )
