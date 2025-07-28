@@ -2,8 +2,8 @@
 
 namespace GameMakerMount;
 
-public record AudioGroupChunk( ArchiveData ChunkData, int ElementCount, int[] ElementOffsets ) 
-	: ArchiveListChunk<AudioGroupChunk.Record>( ChunkData, ChunkMagic.AudioGroups, ElementCount, ElementOffsets )
+public record AudioGroupChunk( ArchiveData ChunkData, int[] ElementOffsets ) 
+	: ArchiveListChunk<AudioGroupChunk.Record>( ChunkData, ChunkMagic.AudioGroups, ElementOffsets )
 {
 	public record Record(
 		int Index,

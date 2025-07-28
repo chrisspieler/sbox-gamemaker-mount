@@ -2,8 +2,8 @@
 
 namespace GameMakerMount;
 
-public record TextureChunk( ArchiveData ChunkData, int ElementCount, int[] ElementOffsets ) 
-	: ArchiveListChunk<TextureChunk.Record>( ChunkData, ChunkMagic.Textures, ElementCount, ElementOffsets )
+public record TextureChunk( ArchiveData ChunkData, int[] ElementOffsets ) 
+	: ArchiveListChunk<TextureChunk.Record>( ChunkData, ChunkMagic.Textures, ElementOffsets )
 {
 	public record Record(
 		int Index,
