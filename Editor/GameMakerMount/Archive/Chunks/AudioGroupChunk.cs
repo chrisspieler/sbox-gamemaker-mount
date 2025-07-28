@@ -13,7 +13,7 @@ public record AudioGroupChunk( ArchiveData ChunkData, int ElementCount, int[] El
 
 	protected override Record ReadRecord( int recordIndex, int recordOffset, FileStream fs, BinaryReader br )
 	{
-		var name = br.ReadGameMakerStringFromId();
+		var name = br.ReadGameMakerString();
 		Log.Info( $"Audio group {recordIndex}: {name}" );
 		
 		return new Record(

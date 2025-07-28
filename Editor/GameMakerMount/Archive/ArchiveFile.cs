@@ -5,6 +5,7 @@ namespace GameMakerMount;
 public class ArchiveFile
 {
 	public const string ChunkMagicForm = "FORM";
+	public const string ChunkMagicGen8 = "GEN8";
 	public const string ChunkMagicSprite = "SPRT";
 	public const string ChunkMagicTexturePage = "TPAG";
 	public const string ChunkMagicString = "STRG";
@@ -18,6 +19,7 @@ public class ArchiveFile
 		FilePath = filePath;
 
 		LoadAllChunkHeaders();
+		LoadAllSingleChunkContent();
 		LoadAllChunkRecords();
 		LoadExternalDependencies();
 	}
@@ -104,6 +106,22 @@ public class ArchiveFile
 				as ArchiveListChunk;
 		}
 		return new ArchiveListChunk( archiveData, magic, elementCount, elementOffsets );
+	}
+
+	private void LoadAllSingleChunkContent()
+	{
+		LoadGen8Chunk();
+		return;
+
+		void LoadGen8Chunk()
+		{
+			if ( !Chunks.TryGetValue( ChunkMagicGen8, out var existingChunk ) )
+				return;
+		
+			var gen8Chunk = Gen8Chunk.Load( existingChunk.ChunkData );
+			Chunks[ChunkMagicGen8] = gen8Chunk;
+			Log.Info( $"Application \"{gen8Chunk.DisplayName}\" uses bytecode version: {gen8Chunk.ByteCodeVersion}" );
+		}
 	}
 
 	private void LoadAllChunkRecords()

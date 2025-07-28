@@ -17,7 +17,12 @@ public static class BinaryReaderExtensions
 		return elements;
 	}
 	
-	public static string ReadGameMakerStringFromId( this BinaryReader br )
+	/// <summary>
+	/// Reads an int from the stream, jumps to the absolute offset that was read, reads a null-terminated string,
+	/// then returns to the position immediately after the int that was first read, and returns the string that was
+	/// read.
+	/// </summary>
+	public static string ReadGameMakerString( this BinaryReader br )
 	{
 		var offset = br.ReadInt32();
 		var returnAddress = br.BaseStream.Position;
@@ -25,4 +30,7 @@ public static class BinaryReaderExtensions
 		br.BaseStream.Seek( returnAddress, SeekOrigin.Begin );
 		return foundString;
 	}
+
+	public static Guid ReadGuid( this BinaryReader br ) => new Guid( br.ReadBytes( 16 ) );
+	public static Vector2Int ReadVector2Int( this BinaryReader br ) => new Vector2Int( br.ReadInt32(), br.ReadInt32() );
 }

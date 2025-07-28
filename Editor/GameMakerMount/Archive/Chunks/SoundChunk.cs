@@ -18,10 +18,10 @@ public record SoundChunk( ArchiveData ChunkData, int ElementCount, int[] Element
 
 	protected override Record ReadRecord( int recordIndex, int recordOffset, FileStream fs, BinaryReader br )
 	{
-		var name = br.ReadGameMakerStringFromId();
+		var name = br.ReadGameMakerString();
 		var flags = br.ReadInt32();
 		var type = br.ReadInt32();
-		var fileName = br.ReadGameMakerStringFromId();
+		var fileName = br.ReadGameMakerString();
 		var unk0 = br.ReadInt32();
 		var volume = br.ReadSingle();
 		var pitch = br.ReadSingle();
