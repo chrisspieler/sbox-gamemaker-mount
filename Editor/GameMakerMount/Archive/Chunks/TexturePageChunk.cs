@@ -2,8 +2,8 @@
 
 namespace GameMakerMount;
 
-public record TexturePageChunk( ArchiveData ChunkData, string Magic, int ElementCount, int[] ElementOffsets ) 
-	: ArchiveListChunk<TexturePageChunk.Record>( ChunkData, Magic,ElementCount, ElementOffsets )
+public record TexturePageChunk( ArchiveData ChunkData, int ElementCount, int[] ElementOffsets ) 
+	: ArchiveListChunk<TexturePageChunk.Record>( ChunkData, ArchiveFile.ChunkMagicTexturePage, ElementCount, ElementOffsets )
 {
 	public record Record(
 		int Index,
@@ -14,7 +14,6 @@ public record TexturePageChunk( ArchiveData ChunkData, string Magic, int Element
 		int TextureIndex
 	) : ChunkRecord( Index, RecordData );
 
-	public override string ChunkMagic => ArchiveFile.ChunkMagicTexturePage;
 	protected override Record ReadRecord( int recordIndex, int recordOffset, FileStream fs, BinaryReader br )
 	{
 		var sourceRect = new RectInt(

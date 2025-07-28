@@ -2,8 +2,8 @@
 
 namespace GameMakerMount;
 
-public record AudioChunk( ArchiveData ChunkData, string Magic, int ElementCount, int[] ElementOffsets )
-	: ArchiveListChunk<AudioChunk.Record>( ChunkData, Magic, ElementCount, ElementOffsets )
+public record AudioChunk( ArchiveData ChunkData, int ElementCount, int[] ElementOffsets )
+	: ArchiveListChunk<AudioChunk.Record>( ChunkData, ArchiveFile.ChunkMagicAudio, ElementCount, ElementOffsets )
 {
 	public enum AudioFormat
 	{
@@ -21,9 +21,6 @@ public record AudioChunk( ArchiveData ChunkData, string Magic, int ElementCount,
 		int Frequency,
 		ArchiveData AudioData
 	) : ChunkRecord( Index, RecordData );
-	
-	public override string ChunkMagic => ArchiveFile.ChunkMagicAudio;
-	
 	
 	protected override Record ReadRecord( int recordIndex, int recordOffset, FileStream fs, BinaryReader br )
 	{

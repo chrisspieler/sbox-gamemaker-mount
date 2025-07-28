@@ -100,7 +100,7 @@ public class ArchiveFile
 		var elementOffsets = reader.ReadInt32Array( elementCount );
 		if ( _listChunkTypes.TryGetValue( magic, out var chunkType ) )
 		{
-			return Activator.CreateInstance( chunkType, [archiveData, magic, elementCount, elementOffsets] ) 
+			return Activator.CreateInstance( chunkType, [archiveData, elementCount, elementOffsets] ) 
 				as ArchiveListChunk;
 		}
 		return new ArchiveListChunk( archiveData, magic, elementCount, elementOffsets );

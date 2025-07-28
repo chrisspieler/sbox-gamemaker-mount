@@ -10,8 +10,6 @@ public record ArchiveListChunk( ArchiveData ChunkData, string Magic, int Element
 public abstract record ArchiveListChunk<TElement>( ArchiveData ChunkData, string Magic, int ElementCount, int[] ElementOffsets )
 	: ArchiveListChunk( ChunkData, Magic, ElementCount, ElementOffsets )
 {
-	public abstract string ChunkMagic { get; }
-
 	public IEnumerable<TElement> Records
 	{
 		get

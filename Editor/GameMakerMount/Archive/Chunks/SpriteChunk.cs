@@ -2,8 +2,8 @@
 
 namespace GameMakerMount;
 
-public record SpriteChunk( ArchiveData ChunkData, string Magic, int ElementCount, int[] ElementOffsets )
-	: ArchiveListChunk<SpriteChunk.Record>( ChunkData, Magic,ElementCount, ElementOffsets )
+public record SpriteChunk( ArchiveData ChunkData, int ElementCount, int[] ElementOffsets )
+	: ArchiveListChunk<SpriteChunk.Record>( ChunkData, ArchiveFile.ChunkMagicSprite, ElementCount, ElementOffsets )
 {
 	public record Record(
 		int Index,
@@ -16,7 +16,6 @@ public record SpriteChunk( ArchiveData ChunkData, string Magic, int ElementCount
 		int[] TextureOffsets
 	) : ChunkRecord( Index, RecordData );
 
-	public override string ChunkMagic => ArchiveFile.ChunkMagicSprite;
 	protected override Record ReadRecord( int recordIndex, int recordOffset, FileStream fs, BinaryReader br )
 	{
 		var nameAddress = br.ReadInt32();

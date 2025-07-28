@@ -2,8 +2,8 @@
 
 namespace GameMakerMount;
 
-public record TextureChunk( ArchiveData ChunkData, string Magic, int ElementCount, int[] ElementOffsets ) 
-	: ArchiveListChunk<TextureChunk.Record>( ChunkData, Magic, ElementCount, ElementOffsets )
+public record TextureChunk( ArchiveData ChunkData, int ElementCount, int[] ElementOffsets ) 
+	: ArchiveListChunk<TextureChunk.Record>( ChunkData, ArchiveFile.ChunkMagicTexture, ElementCount, ElementOffsets )
 {
 	public record Record(
 		int Index,
@@ -14,8 +14,6 @@ public record TextureChunk( ArchiveData ChunkData, string Magic, int ElementCoun
 		ArchiveData TextureData
 	) : ChunkRecord( Index, RecordData );
 	
-	public override string ChunkMagic => ArchiveFile.ChunkMagicTexture;
-
 	protected override Record ReadRecord( int recordIndex, int recordOffset, FileStream fs, BinaryReader br )
 	{
 		int scaled = br.ReadInt32();
