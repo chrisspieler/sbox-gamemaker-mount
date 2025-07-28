@@ -32,6 +32,9 @@ public class ArchiveFile
 	public List<TexturePageChunk.Record> TexturePages = [];
 	public Dictionary<int, TexturePageChunk.Record> TexturePageOffsets = [];
 
+	public List<CodeChunk.Record> Code = [];
+	public Dictionary<int, CodeChunk.Record> CodeOffsets = [];
+
 	public List<FunctionChunk.Record> Functions = [];
 	public Dictionary<int, FunctionChunk.Record> FunctionOffsets = [];
 	
@@ -91,6 +94,7 @@ public class ArchiveFile
 		Load<SoundChunk, SoundChunk.Record>( ChunkMagic.Sounds, ref Sounds, ref SoundOffsets );
 		Load<AudioGroupChunk, AudioGroupChunk.Record>( ChunkMagic.AudioGroups, ref AudioGroups, ref AudioGroupOffsets );
 		Load<TexturePageChunk, TexturePageChunk.Record>( ChunkMagic.TexturePages, ref TexturePages, ref TexturePageOffsets );
+		Load<CodeChunk, CodeChunk.Record>( ChunkMagic.Code, ref Code, ref CodeOffsets );
 		Load<FunctionChunk, FunctionChunk.Record>( ChunkMagic.Functions, ref Functions, ref FunctionOffsets );
 		Load<TextureChunk, TextureChunk.Record>( ChunkMagic.Textures, ref Textures, ref TextureOffsets );
 		Load<AudioChunk, AudioChunk.Record>( ChunkMagic.Audio, ref Audio, ref AudioOffsets );
@@ -102,9 +106,13 @@ public class ArchiveFile
 		{
 			if ( !Chunks.TryGetValue( magic, out var chunk ) || chunk is not TChunk listChunk )
 				return;
-			
+
 			list = listChunk.Records.ToList();
-			offsets = list.ToDictionary( r => r.RecordData.Offset );
+			offsets = new Dictionary<int, TRecord>();
+			foreach ( var record in list )
+			{
+				offsets[record.RecordData.Offset] = record;
+			}
 		}
 	}
 

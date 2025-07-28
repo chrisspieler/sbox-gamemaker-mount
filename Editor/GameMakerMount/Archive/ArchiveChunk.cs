@@ -12,6 +12,7 @@ public record ArchiveChunk( ArchiveData ChunkData, string Magic )
 		{ ChunkMagic.Sounds,		typeof(SoundChunk) },
 		{ ChunkMagic.AudioGroups,	typeof(AudioGroupChunk) },
 		{ ChunkMagic.TexturePages,	typeof(TexturePageChunk) },
+		{ ChunkMagic.Code,			typeof(CodeChunk) },
 		{ ChunkMagic.Functions,		typeof(FunctionChunk) },
 		{ ChunkMagic.Textures,		typeof(TextureChunk) },
 		{ ChunkMagic.Audio,			typeof(AudioChunk) }
