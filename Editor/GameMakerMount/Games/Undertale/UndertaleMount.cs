@@ -7,7 +7,7 @@ public class UndertaleMount : GameMakerMount
 {
 	public override string Ident => "undertale";
 	public override string Title => "Undertale";
-	protected override long AppId => 391540;
+	public override long AppId => 391540;
 	
 	protected override Task Mount( MountContext context )
 	{

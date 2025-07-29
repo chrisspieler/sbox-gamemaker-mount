@@ -1,25 +1,38 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Sandbox.Mounting;
-using Directory = Sandbox.Mounting.Directory;
 
 namespace GameMakerMount;
 
-public abstract class GameMakerMount : BaseGameMount
+public abstract partial class GameMakerMount : BaseGameMount
 {
 	private record MountContextAddCommand( ResourceType Type, string Path, ResourceLoader Loader );
 	
-	protected abstract long AppId { get; }
-	protected string AppDirectory { get; private set; }
+	public abstract long AppId { get; }
+	public string AppDirectory { get; private set; }
 	protected virtual string MusicDirectory => string.Empty;
 
+	public virtual bool MultiArchive => false;
 	public IReadOnlyList<ArchiveFile> Archives
 	{
 		get => _archives.AsReadOnly();
 	}
 	private List<ArchiveFile> _archives = [];
 
-	protected virtual bool MultiArchive => false;
+	public int MainArchiveCount => Archives.Count;
+	public int ExternalArchiveCount => GetExternalArchives().Count(); // This is slow and bad.
+	public int TotalArchiveCount => MainArchiveCount + ExternalArchiveCount;
+
+	public IEnumerable<ArchiveFile> GetExternalArchives()
+	{
+		var externalArchives = new List<ArchiveFile>();
+		foreach ( var archive in Archives )
+		{
+			externalArchives.AddRange( archive.ExternalAudioGroupData );
+		}
+		return externalArchives;
+	}
+	public IEnumerable<ArchiveFile> GetAllArchives() => Archives.Concat( GetExternalArchives() );
 
 	protected override void Initialize( InitializeContext context )
 	{
@@ -28,11 +41,6 @@ public abstract class GameMakerMount : BaseGameMount
 		
 		AppDirectory = context.GetAppDirectory( AppId );
 		IsInstalled = Path.Exists( AppDirectory );
-	}
-
-	private void ClearLoadedData()
-	{
-		_archives.Clear();
 	}
 
 	protected override Task Mount( MountContext context )

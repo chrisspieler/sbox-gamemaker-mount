@@ -7,7 +7,7 @@ public class RivalsMount : GameMakerMount
 {
 	public override string Ident => "rivals_of_aether";
 	public override string Title => "Rivals of Aether";
-	protected override long AppId => 383980;
+	public override long AppId => 383980;
 
 	protected override Task Mount( MountContext context )
 	{
